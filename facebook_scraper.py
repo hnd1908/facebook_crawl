@@ -5,6 +5,7 @@ from requester import Requester
 from parser import Parser
 import os
 import json
+import facebook_urls
 
 logger = setup_logger(__name__)
 
@@ -77,8 +78,13 @@ class FacebookScraper():
             raise Exception(f"Lỗi khi lấy post {e}")
 
 if __name__ == "__main__":
-    fanpage_url = "https://www.facebook.com/Theanh28/"
     post_api_path = "./api_info/post_api.json"
     comment_api_path = "./api_info/comment_api.json"
     scraper = FacebookScraper()
-    scraper.crawl_post(fanpage_url, post_api_path, comment_api_path=comment_api_path)
+    with open("./facebook_urls/page_urls.txt", "r", encoding="utf-8") as f:
+        for line in f:
+            fanpage_url = line.strip()
+            if fanpage_url:
+                logger.info(f"=== Bắt đầu crawl fanpage: {fanpage_url} ===")
+                scraper.crawl_post(fanpage_url, post_api_path, comment_api_path=comment_api_path, num_iterations=100)
+    
