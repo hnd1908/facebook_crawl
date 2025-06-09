@@ -122,7 +122,7 @@ if __name__ == "__main__":
             fanpage_url = line.strip()
             if fanpage_url:
                 logger.info(f"=== Bắt đầu crawl fanpage: {fanpage_url} ===")
-                posts = scraper.crawl_post(fanpage_url, post_api_path, comment_api_path=comment_api_path, num_iterations=200, return_posts=True)
+                posts = scraper.crawl_post(fanpage_url, post_api_path, comment_api_path=comment_api_path, num_iterations=30, return_posts=True)
                 for post in posts:
                     post_id = post.get("feedback_id")
                     if post_id and post_id not in post_ids:
