@@ -50,18 +50,25 @@ class FacebookScraper():
                                     comment_info = Parser.parse_comments_info(resp_cmt, save_dir=save_dir)
                                     page_info = Parser.parse_page_info(resp_cmt)
                                     comments.extend(comment_info.get('comments', []))
-                                    iter_cmt = 1
-                                    while page_info.get('has_next_page'):
-                                        logger.info(f"Lấy thêm comment lần {iter_cmt} cho post {post_id}")
-                                        end_cursor = page_info.get('end_cursor')
-                                        resp_cmt = Requester._get_more_comments(cmt_headers, post_id, more_comment_api, end_cursor)
-                                        if resp_cmt and resp_cmt.status_code == 200:
-                                            more_comments = Parser.parse_comments(resp_cmt.json(), save_dir=save_dir)
-                                            comments.extend(more_comments)
-                                            page_info = Parser.parse_page_info(resp_cmt)
-                                            iter_cmt += 1
-                                        else:
-                                            break
+                                    # Giới hạn 100 comment
+                                    if len(comments) >= 100:
+                                        comments = comments[:100]
+                                    else:
+                                        iter_cmt = 1
+                                        while page_info.get('has_next_page') and len(comments) < 100:
+                                            logger.info(f"Lấy thêm comment lần {iter_cmt} cho post {post_id}")
+                                            end_cursor = page_info.get('end_cursor')
+                                            resp_cmt = Requester._get_more_comments(cmt_headers, post_id, more_comment_api, end_cursor)
+                                            if resp_cmt and resp_cmt.status_code == 200:
+                                                more_comments = Parser.parse_comments(resp_cmt.json(), save_dir=save_dir)
+                                                comments.extend(more_comments)
+                                                if len(comments) >= 100:
+                                                    comments = comments[:100]
+                                                    break
+                                                page_info = Parser.parse_page_info(resp_cmt)
+                                                iter_cmt += 1
+                                            else:
+                                                break
                             post_info["comments"] = comments
                             all_posts.append(post_info)
                     except Exception as e:
@@ -86,5 +93,5 @@ if __name__ == "__main__":
             fanpage_url = line.strip()
             if fanpage_url:
                 logger.info(f"=== Bắt đầu crawl fanpage: {fanpage_url} ===")
-                scraper.crawl_post(fanpage_url, post_api_path, comment_api_path=comment_api_path, num_iterations=100)
+                scraper.crawl_post(fanpage_url, post_api_path, comment_api_path=comment_api_path, num_iterations=20)
     
