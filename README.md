@@ -1,7 +1,7 @@
 # facebook_scraper
 
 ## Mục đích
-Công cụ này dùng để crawl (thu thập) bài viết và bình luận từ các fanpage Facebook, đồng thời tải về toàn bộ hình ảnh trong bài viết và bình luận.
+Crawl (thu thập) bài viết và bình luận từ các fanpage Facebook, đồng thời tải về toàn bộ hình ảnh trong bài viết và bình luận.
 
 ## Tính năng
 - Crawl toàn bộ bài viết từ danh sách fanpage cho trước.
