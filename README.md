@@ -52,8 +52,7 @@ python facebook_scraper.py
 
 ## Lưu ý
 - Chỉ lưu ảnh có đuôi hợp lệ (.jpg, .png, .gif, ...)
-- Mỗi bài viết chỉ lấy tối đa 100 bình luận đầu tiên.
-- Nếu gặp lỗi mạng hoặc Facebook thay đổi cấu trúc, hãy kiểm tra lại log và cập nhật code nếu cần.
+- Mỗi bài viết chỉ lấy tối đa 100 bình luận đầu tiên (có thể tùy chỉnh).
 
 ## Tác giả
 | MSSV      | Họ và Tên             |
