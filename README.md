@@ -5,7 +5,7 @@ Công cụ này dùng để crawl (thu thập) bài viết và bình luận từ
 
 ## Tính năng
 - Crawl toàn bộ bài viết từ danh sách fanpage cho trước.
-- Lấy tối đa 100 bình luận đầu tiên cho mỗi bài viết.
+- Lấy tối đa 100 bình luận đầu tiên cho mỗi bài viết (có thể tùy chỉnh).
 - Tải toàn bộ ảnh trong bài viết và bình luận về cùng một thư mục.
 - Lưu dữ liệu bài viết và bình luận vào file JSON duy nhất (`data/json/posts.json`).
 
