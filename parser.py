@@ -37,10 +37,10 @@ class Parser():
         return total_parent_cmt
     
     @staticmethod
-    def parse_comments(resp_json: dict) -> list:
+    def parse_comments(resp_json: dict, save_dir="data\\image") -> list:
         edges = resp_json['data']['node']['comment_rendering_instance_for_feed_location']['comments']['edges']
 
-        comments = list()
+        comments = []
         for edge in edges:
             comment = {
                 'text': "",
@@ -52,24 +52,30 @@ class Parser():
                 logger.warning("Không tìm thấy text trong comment") 
             
             try:
-                i = len(edge['node']['attachments'])
-                comment['image'] = edge['node']['attachments'][i-1]['style_type_renderer']['attachment']['media']['image'] 
+                attachments = edge['node'].get('attachments', [])
+                if attachments:
+                    att = attachments[-1]
+                    img_info = att['style_type_renderer']['attachment']['media']['image']
+                    uri = img_info.get('uri')
+                    if uri:
+                        filename = os.path.join(save_dir, os.path.basename(uri.split("?")[0]))
+                        img = requests.get(uri)
+                        with open(filename, "wb") as f:
+                            f.write(img.content)
+                        comment['image'] = filename
             except Exception as e:
-                logger.warning("Không tìm thấy ảnh trong comment")
+                logger.warning("Không lấy được ảnh trong comment")
 
             comments.append(comment)
 
         return comments
 
     @staticmethod
-    def parse_comments_info(resp: requests.Response) -> dict:
+    def parse_comments_info(resp: requests.Response, save_dir="data\\image") -> dict:
         resp_json = resp.json()
         comments_info = dict()
-
         comments_info['total_comment'] = Parser.parse_total_cmt(resp_json)
-        # comments_info['total_parent_comment'] = Parser.parse_total_parent_cmt(resp_json)
-        comments_info['comments'] = Parser.parse_comments(resp_json)
-
+        comments_info['comments'] = Parser.parse_comments(resp_json, save_dir=save_dir)
         return comments_info
 
     @staticmethod
