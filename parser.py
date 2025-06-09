@@ -5,6 +5,12 @@ import os
 
 logger = setup_logger(__name__)
 
+VALID_IMAGE_EXTS = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'}
+
+def is_valid_image(filename):
+    ext = os.path.splitext(filename)[1].lower()
+    return ext in VALID_IMAGE_EXTS and ext != ''
+
 class Parser():
     @staticmethod
     def _get_payload(payload: str) -> dict:
@@ -37,6 +43,46 @@ class Parser():
         return total_parent_cmt
     
     @staticmethod
+    def download_images_from_attachments(attachments, save_dir="data\\image"):
+        image_paths = []
+        for att in attachments:
+            try:
+                styles = att.get('styles', {})
+                attachment = styles.get('attachment', {})
+                if attachment.get('media', {}).get('__typename') == "Video":
+                    continue
+                if 'all_subattachments' in attachment:
+                    nodes = attachment['all_subattachments'].get('nodes', [])
+                    for node in nodes:
+                        media = node.get('media', {})
+                        if media.get('__typename') == "Video":
+                            continue
+                        viewer_image = media.get('viewer_image', {})
+                        uri = viewer_image.get('uri')
+                        if uri:
+                            filename = os.path.join(save_dir, os.path.basename(uri.split("?")[0]))
+                            if is_valid_image(filename):
+                                img = requests.get(uri)
+                                with open(filename, "wb") as f:
+                                    f.write(img.content)
+                                image_paths.append(filename)
+                elif 'media' in attachment:
+                    media = attachment['media']
+                    if media.get('__typename') == "Video":
+                        continue
+                    uri = media.get('photo_image', {}).get('uri')
+                    if uri:
+                        filename = os.path.join(save_dir, os.path.basename(uri.split("?")[0]))
+                        if is_valid_image(filename):
+                            img = requests.get(uri)
+                            with open(filename, "wb") as f:
+                                f.write(img.content)
+                            image_paths.append(filename)
+            except Exception as e:
+                print("Không lấy được ảnh:", e)
+        return image_paths
+
+    @staticmethod
     def parse_comments(resp_json: dict, save_dir="data\\image") -> list:
         edges = resp_json['data']['node']['comment_rendering_instance_for_feed_location']['comments']['edges']
 
@@ -59,10 +105,11 @@ class Parser():
                     uri = img_info.get('uri')
                     if uri:
                         filename = os.path.join(save_dir, os.path.basename(uri.split("?")[0]))
-                        img = requests.get(uri)
-                        with open(filename, "wb") as f:
-                            f.write(img.content)
-                        comment['image'] = filename
+                        if is_valid_image(filename):
+                            img = requests.get(uri)
+                            with open(filename, "wb") as f:
+                                f.write(img.content)
+                            comment['image'] = filename
             except Exception as e:
                 logger.warning("Không lấy được ảnh trong comment")
 
@@ -232,49 +279,6 @@ class Parser():
         except Exception as e:
             logger.warning(f"Không lấy được creation_time: {e}")
             return None
-
-    @staticmethod
-    def download_images_from_attachments(attachments, save_dir="data\\image"):
-        image_paths = []
-        for att in attachments:
-            try:
-                styles = att.get('styles', {})
-                attachment = styles.get('attachment', {})
-                if attachment.get('media', {}).get('__typename') == "Video":
-                    print("Bỏ qua video.")
-                    continue
-                if 'all_subattachments' in attachment:
-                    nodes = attachment['all_subattachments'].get('nodes', [])
-                    for node in nodes:
-                        media = node.get('media', {})
-                        if media.get('__typename') == "Video":
-                            print("Bỏ qua node video.")
-                            continue
-                        viewer_image = media.get('viewer_image', {})
-                        uri = viewer_image.get('uri')
-                        if uri:
-                            filename = os.path.join(save_dir, os.path.basename(uri.split("?")[0]))
-                            img = requests.get(uri)
-                            with open(filename, "wb") as f:
-                                f.write(img.content)
-                            print(f"Đã lưu ảnh: {filename}")
-                            image_paths.append(filename)
-                elif 'media' in attachment:
-                    media = attachment['media']
-                    if media.get('__typename') == "Video":
-                        print("Bỏ qua media video.")
-                        continue
-                    uri = media.get('photo_image', {}).get('uri')
-                    if uri:
-                        filename = os.path.join(save_dir, os.path.basename(uri.split("?")[0]))
-                        img = requests.get(uri)
-                        with open(filename, "wb") as f:
-                            f.write(img.content)
-                        print(f"-- Đã lưu ảnh: {filename}")
-                        image_paths.append(filename)
-            except Exception as e:
-                print("Không lấy được ảnh:", e)
-        return image_paths
 
     @staticmethod
     def parse_post_obj(obj, save_dir="data\\image"):
