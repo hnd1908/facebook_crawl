@@ -62,20 +62,20 @@ class FacebookScraper():
                                     comment_info = Parser.parse_comments_info(resp_cmt, save_dir=save_dir)
                                     page_info = Parser.parse_page_info(resp_cmt)
                                     comments.extend(comment_info.get('comments', []))
-                                    # Giới hạn 100 comment
-                                    if len(comments) >= 100:
-                                        comments = comments[:100]
+                                    # Giới hạn 300 comment
+                                    if len(comments) >= 300:
+                                        comments = comments[:300]
                                     else:
                                         iter_cmt = 1
-                                        while page_info.get('has_next_page') and len(comments) < 100:
+                                        while page_info.get('has_next_page') and len(comments) < 300:
                                             logger.info(f"Lấy thêm comment lần {iter_cmt} cho post {post_id}")
                                             end_cursor = page_info.get('end_cursor')
                                             resp_cmt = Requester._get_more_comments(cmt_headers, post_id, more_comment_api, end_cursor)
                                             if resp_cmt and resp_cmt.status_code == 200:
                                                 more_comments = Parser.parse_comments(resp_cmt.json(), save_dir=save_dir)
                                                 comments.extend(more_comments)
-                                                if len(comments) >= 100:
-                                                    comments = comments[:100]
+                                                if len(comments) >= 300:
+                                                    comments = comments[:300]
                                                     break
                                                 page_info = Parser.parse_page_info(resp_cmt)
                                                 iter_cmt += 1
